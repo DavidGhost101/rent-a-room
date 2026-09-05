@@ -19,3 +19,8 @@ scripts/shot_*.png
 
 # Real Cloud Run secrets, never commit
 deploy/cloudrun-env.yaml
+
+# Local run artifacts
+npm-install.log
+server-run.log
+server-err.log
