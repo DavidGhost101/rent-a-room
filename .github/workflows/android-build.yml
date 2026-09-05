@@ -49,7 +49,11 @@ jobs:
 
       - name: Build debug APK
         working-directory: android-app/android
-        run: ./gradlew assembleDebug --no-daemon
+        # chmod because the repo was first committed from Windows, which does not
+        # carry the executable bit. The bit is also set in git, this is a belt and braces.
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
