@@ -27,6 +27,14 @@ if (require.main === module) {
       await connectDatabase();
       BackgroundJobRunner.start();
     } catch (e) {
+      // In production connectDatabase only throws when the database is genuinely
+      // unusable. Carrying on would serve a healthy looking app backed by memory
+      // that loses everything on the next restart, so exit and let Cloud Run
+      // surface the failure instead.
+      if ((process.env.NODE_ENV || 'development') === 'production') {
+        console.error('FATAL: database unavailable in production:', e.message);
+        process.exit(1);
+      }
       console.warn('Database initialization notice:', e.message);
     }
   });

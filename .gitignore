@@ -24,3 +24,8 @@ deploy/cloudrun-env.yaml
 npm-install.log
 server-run.log
 server-err.log
+
+jest.log
+mongo-run.log
+mongo-err.log
+scripts/local-mongo-uri.txt
