@@ -1,0 +1,35 @@
+# Copy this to deploy/cloudrun-env.yaml, fill in real values, keep it out of git.
+# deploy/cloudrun-env.yaml is gitignored. Never commit real secrets.
+#
+# Generate each JWT secret with:
+#   node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+
+NODE_ENV: "production"
+HOST: "0.0.0.0"
+
+# MongoDB Atlas connection string (Atlas UI: Connect, Drivers, Node.js).
+# In Atlas Network Access, allow 0.0.0.0/0, because Cloud Run has no fixed
+# outbound IP unless you attach a VPC connector with Cloud NAT.
+MONGODB_URI: "mongodb+srv://USER:PASSWORD@cluster0.xxxxx.mongodb.net/rentaroom?retryWrites=true&w=majority"
+
+# Long random strings. The app now refuses to boot in production without these.
+JWT_SECRET: "REPLACE_WITH_96_RANDOM_HEX_CHARS"
+JWT_REFRESH_SECRET: "REPLACE_WITH_DIFFERENT_96_RANDOM_HEX_CHARS"
+JWT_EXPIRES_IN: "2h"
+JWT_REFRESH_EXPIRES_IN: "7d"
+
+# The single admin password for the admin portal. Make it long.
+ADMIN_KEY: "REPLACE_WITH_A_STRONG_ADMIN_PASSWORD"
+
+# SMS. Leave as local until Twilio is configured, then switch to twilio.
+SMS_DRIVER: "local"
+TWILIO_ACCOUNT_SID: ""
+TWILIO_AUTH_TOKEN: ""
+TWILIO_PHONE_NUMBER: ""
+TWILIO_VERIFY_SERVICE_SID: ""
+
+# Optional extras
+TURNSTILE_SITE_KEY: ""
+TURNSTILE_SECRET_KEY: ""
+GEMINI_API_KEY: ""
+EMAIL_FROM: "noreply@rentaroomsoweto.co.za"

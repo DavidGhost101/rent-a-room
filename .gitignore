@@ -16,3 +16,6 @@ android-app/www/**/node_modules/
 
 # Local diagnostic screenshots
 scripts/shot_*.png
+
+# Real Cloud Run secrets, never commit
+deploy/cloudrun-env.yaml
