@@ -29,3 +29,7 @@ jest.log
 mongo-run.log
 mongo-err.log
 scripts/local-mongo-uri.txt
+
+jest*.log
+prefetch.log
+prefetch-err.log

@@ -367,12 +367,30 @@ class AdminService {
     const results = [];
     try {
       for (const item of items) {
+        // The admin UI documents these rows as landlordFullName / landlordPhone,
+        // and its own example payload uses them. This code used to read item.phone
+        // and item.landlordName, which are never sent, so phone was always
+        // undefined. Landlord.phone is required and unique, so Landlord.create
+        // threw on every import, the catch below swallowed it, and the whole batch
+        // silently went to the in-memory fallback store instead of the database.
+        // Bulk import therefore never actually persisted anything. Older field
+        // names are still accepted so nothing that did work breaks.
+        const importPhone = item.landlordPhone || item.phone;
+        const importName = item.landlordFullName || item.landlordName || 'Curated Landlord';
+
+        if (!importPhone) {
+          throw new Error(
+            `Listing "${item.title || '(untitled)'}" is missing landlordPhone. ` +
+            'Every imported listing needs a landlord phone number.'
+          );
+        }
+
         // Find or create landlord
-        let landlord = await Landlord.findOne({ phone: item.phone });
+        let landlord = await Landlord.findOne({ phone: importPhone });
         if (!landlord) {
           landlord = await Landlord.create({
-            fullName: item.landlordName || 'Curated Landlord',
-            phone: item.phone,
+            fullName: importName,
+            phone: importPhone,
             isPhoneVerified: true,
             hasWhatsapp: true,
             showPhonePublicly: true,
@@ -391,7 +409,11 @@ class AdminService {
           propertyType: item.propertyType || 'Backroom',
           amenities: item.amenities || [],
           image: item.image || '',
+          // Both status fields must be written together. publicationStatus
+          // defaults to PENDING, and the public listings query excludes PENDING,
+          // so setting status alone imported listings that no visitor could see.
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'admin_import'
         });
         results.push(listing);
@@ -422,6 +444,7 @@ class AdminService {
           amenities: item.amenities || [],
           image: item.image || '',
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'admin_import',
           createdAt: new Date()
         };
