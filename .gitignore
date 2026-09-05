@@ -1,0 +1,18 @@
+node_modules/
+.env
+*.log
+coverage/
+.DS_Store
+
+# Build/delivery archives - the extracted android-app/ folder is what is tracked
+android-app-delivery.zip
+
+# Android build output
+android-app/android/build/
+android-app/android/app/build/
+android-app/android/.gradle/
+android-app/android/local.properties
+android-app/www/**/node_modules/
+
+# Local diagnostic screenshots
+scripts/shot_*.png

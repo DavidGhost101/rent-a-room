@@ -1,0 +1,18 @@
+# Files NOT uploaded to Cloud Build when running: gcloud run deploy --source .
+# Keeping this tight makes deploys much faster and the image smaller.
+
+.git/
+.github/
+node_modules/
+.env
+*.log
+coverage/
+tests/
+.DS_Store
+
+# The Android wrapper is a separate deliverable, not part of the backend image.
+android-app/
+android-app-delivery.zip
+
+# Local-only compose setup
+docker-compose.yml

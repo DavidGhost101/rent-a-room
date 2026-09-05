@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Rent A Room</string>
+    <string name="title_activity_main">Rent A Room</string>
+    <string name="package_name">za.co.rentaroom.soweto</string>
+    <string name="custom_url_scheme">za.co.rentaroom.soweto</string>
+</resources>

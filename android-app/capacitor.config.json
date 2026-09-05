@@ -1,0 +1,11 @@
+{
+  "appId": "za.co.rentaroom.soweto",
+  "appName": "Rent A Room",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
