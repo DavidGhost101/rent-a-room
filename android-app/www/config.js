@@ -1,4 +1,4 @@
-// Native app configuration.
+﻿// Native app configuration.
 //
 // The Android app has no backend of its own -- it's a WebView shell around
 // the same frontend the website uses, and every API call needs an ABSOLUTE
@@ -9,5 +9,5 @@
 //
 // Before building the Android app, replace the placeholder below with your
 // real deployed backend URL (no trailing slash), e.g.:
-//   window.API_BASE_URL = 'https://rentaroom-production.up.railway.app';
-window.API_BASE_URL = 'https://REPLACE_WITH_YOUR_DEPLOYED_BACKEND_URL';
+//   window.API_BASE_URL = 'https://rent-a-room-f0iy.onrender.com';
+window.API_BASE_URL = 'https://rent-a-room-f0iy.onrender.com';
