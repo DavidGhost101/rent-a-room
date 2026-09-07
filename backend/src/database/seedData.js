@@ -1,4 +1,4 @@
-const Landlord = require('../models/Landlord');
+﻿const Landlord = require('../models/Landlord');
 const Listing = require('../models/Listing');
 const RoomRequest = require('../models/RoomRequest');
 const User = require('../models/User');
@@ -67,6 +67,7 @@ async function seed() {
           amenities: ['Free WiFi', 'Prepaid Power', 'Private Shower', 'Secured Yard', 'Near Rea Vaya'],
           image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'landlord'
         },
         {
@@ -79,6 +80,7 @@ async function seed() {
           amenities: ['Prepaid Electricity', 'Parking Space', 'Hot Water', 'Tiled Floors'],
           image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'landlord'
         },
         {
@@ -92,6 +94,7 @@ async function seed() {
           amenities: ['Uncapped WiFi', 'Study Desk', 'Prepaid Meter', 'Near UJ Campus', 'CCTV Security'],
           image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80',
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'landlord'
         },
         {
@@ -104,6 +107,7 @@ async function seed() {
           amenities: ['Full Bathroom', 'Fitted Kitchenette', 'Gated Yard', 'Prepaid Power', 'Near Diepkloof Square'],
           image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80',
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'landlord'
         },
         {
@@ -116,6 +120,7 @@ async function seed() {
           amenities: ['Shared Bathroom', 'Prepaid Electricity', 'Near Protea Glen Mall', 'Safe Fenced Yard'],
           image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&q=80',
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'landlord'
         },
         {
@@ -128,6 +133,7 @@ async function seed() {
           amenities: ['Private Shower & Toilet', 'Free WiFi', 'Paved Yard', 'Motorized Gate', 'Covered Parking'],
           image: 'https://images.unsplash.com/photo-1505691938895-1758d7feb511?auto=format&fit=crop&w=800&q=80',
           status: 'active',
+          publicationStatus: 'PUBLISHED',
           source: 'landlord'
         }
       ]);

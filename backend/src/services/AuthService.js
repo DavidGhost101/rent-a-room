@@ -12,8 +12,11 @@ const {
   maskPhoneNumber
 } = require('../utils/phoneUtils');
 
-// In-memory OTP storage for fast verification (canonicalPhone -> { otp, createdAt, cooldownExpiresAt, expiresAt, attempts, maxAttempts })
-const otpStore = new Map();
+// OTP storage. Backed by MongoDB when connected so any instance can verify a code
+// any other instance issued, with an in-memory mirror as the fallback. Previously
+// this was a bare Map, which broke verification whenever more than one instance
+// was running. All of its methods are async.
+const otpStore = require('./otpStore');
 
 class AuthService {
   /**
@@ -32,7 +35,7 @@ class AuthService {
     const now = Date.now();
 
     // Check server-side 60-second cooldown
-    const existing = otpStore.get(canonicalPhone);
+    const existing = await otpStore.get(canonicalPhone);
     if (existing && now < existing.cooldownExpiresAt) {
       const retryAfter = Math.max(1, Math.ceil((existing.cooldownExpiresAt - now) / 1000));
       const cooldownErr = new Error(`Please wait ${retryAfter}s before requesting another verification code.`);
@@ -57,8 +60,8 @@ class AuthService {
       maxAttempts: 5,
       phone: canonicalPhone
     };
-    otpStore.set(canonicalPhone, entry);
-    if (val.localNormalized) otpStore.set(val.localNormalized, entry);
+    await otpStore.set(canonicalPhone, entry);
+    if (val.localNormalized) await otpStore.set(val.localNormalized, entry);
 
     const message = `Your Rent A Room Soweto verification code is: ${otp}. Valid for 10 minutes. Do not share this code.`;
     await NotificationDispatcher.sendSms(canonicalPhone, message, 'OTP_VERIFICATION');
@@ -101,7 +104,8 @@ class AuthService {
       throw err;
     }
 
-    const stored = otpStore.get(canonicalPhone) || (val.localNormalized && otpStore.get(val.localNormalized));
+    const stored = (await otpStore.get(canonicalPhone)) ||
+                   (val.localNormalized ? await otpStore.get(val.localNormalized) : null);
     const now = Date.now();
 
     if (!stored) {
@@ -112,8 +116,8 @@ class AuthService {
     }
 
     if (now > stored.expiresAt) {
-      otpStore.delete(canonicalPhone);
-      if (val.localNormalized) otpStore.delete(val.localNormalized);
+      await otpStore.delete(canonicalPhone);
+      if (val.localNormalized) await otpStore.delete(val.localNormalized);
       const err = new Error('Verification code has expired. Please request a new code.');
       err.code = 'OTP_EXPIRED';
       err.statusCode = 400;
@@ -121,8 +125,8 @@ class AuthService {
     }
 
     if (stored.attempts >= stored.maxAttempts) {
-      otpStore.delete(canonicalPhone);
-      if (val.localNormalized) otpStore.delete(val.localNormalized);
+      await otpStore.delete(canonicalPhone);
+      if (val.localNormalized) await otpStore.delete(val.localNormalized);
       const err = new Error('Too many incorrect verification attempts. This code has been invalidated for security. Please request a new code.');
       err.code = 'OTP_ATTEMPTS_EXCEEDED';
       err.statusCode = 429;
@@ -136,10 +140,14 @@ class AuthService {
 
     if (!isMatch) {
       stored.attempts += 1;
+      // Persist the attempt count, otherwise a retry landing on another instance
+      // would start counting from zero again and the limit would never bite.
+      await otpStore.setAttempts(canonicalPhone, stored.attempts);
+      if (val.localNormalized) await otpStore.setAttempts(val.localNormalized, stored.attempts);
       const remaining = stored.maxAttempts - stored.attempts;
       if (remaining <= 0) {
-        otpStore.delete(canonicalPhone);
-        if (val.localNormalized) otpStore.delete(val.localNormalized);
+        await otpStore.delete(canonicalPhone);
+        if (val.localNormalized) await otpStore.delete(val.localNormalized);
         const err = new Error('Too many incorrect verification attempts. This code has been invalidated. Please request a new code.');
         err.code = 'OTP_ATTEMPTS_EXCEEDED';
         err.statusCode = 429;
@@ -153,8 +161,8 @@ class AuthService {
     }
 
     // Successfully verified -> invalidate code immediately
-    otpStore.delete(canonicalPhone);
-    if (val.localNormalized) otpStore.delete(val.localNormalized);
+    await otpStore.delete(canonicalPhone);
+    if (val.localNormalized) await otpStore.delete(val.localNormalized);
 
     // Find or create Landlord record using canonical phone
     let landlord = null;

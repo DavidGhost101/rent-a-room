@@ -28,6 +28,10 @@
     "swagger-ui-express": "^5.0.1",
     "twilio": "^5.0.1"
   },
+  "overridesReason": "express 4 pins a qs version with two moderate advisories (GHSA-x5fp-wj9c-mxmx array-limit bypass, GHSA-4mjr-xmp4-gh2g DoS). npm audit fix cannot resolve them without moving to express 5, a breaking change. Forcing qs to the patched 6.16.0 clears both while staying on express 4.",
+  "overrides": {
+    "qs": "^6.16.0"
+  },
   "devDependencies": {
     "jest": "^29.7.0",
     "mongodb-memory-server": "^9.2.0",

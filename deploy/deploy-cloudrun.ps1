@@ -37,11 +37,10 @@ Write-Host "Enabling required APIs (first run only, takes a minute)..."
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com --project $ProjectId
 
 Write-Host ""
-# max-instances is 1 ON PURPOSE. AuthService keeps OTP codes in a module level Map,
-# so with 2 or more instances a landlord can request a code on one instance and have
-# the verify request land on another, where the Map is empty, and login fails at
-# random. A single instance still serves roughly 80 concurrent requests. Raise this
-# only after OTP codes are persisted in MongoDB with a TTL index.
+# max-instances was pinned to 1 while OTP codes lived in a module level Map, which
+# broke verification across instances. They are now persisted in MongoDB with a TTL
+# index (backend/src/services/otpStore.js), verified by deploy/test-otp-persistence.js,
+# so the service can scale out safely.
 Write-Host "Deploying from source..."
 gcloud run deploy $ServiceName `
   --source . `
@@ -53,7 +52,7 @@ gcloud run deploy $ServiceName `
   --memory 512Mi `
   --cpu 1 `
   --min-instances 0 `
-  --max-instances 1 `
+  --max-instances 4 `
   --timeout 300 `
   --env-vars-file $envFile
 
