@@ -35,3 +35,6 @@ prefetch.log
 prefetch-err.log
 
 deploy/ADMIN-PASSWORD.txt
+
+# Downloaded build artifacts
+apk/
