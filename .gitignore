@@ -33,3 +33,5 @@ scripts/local-mongo-uri.txt
 jest*.log
 prefetch.log
 prefetch-err.log
+
+deploy/ADMIN-PASSWORD.txt
