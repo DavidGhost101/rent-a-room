@@ -1,0 +1,53 @@
+# Render blueprint. An alternative to Google Cloud Run that needs no credit card.
+#
+# Render builds this repo's Dockerfile, so the image is identical to the one
+# Cloud Run would run. Nothing in the application code is host specific: the
+# server honours the PORT env var and every secret comes from the environment,
+# so the same commit deploys to either platform.
+#
+# How to use:
+#   1. In the Render dashboard, New > Blueprint, and point it at
+#      github.com/DavidGhost101/rent-a-room
+#   2. Render reads this file and creates the service
+#   3. Set the four secret values below in the dashboard (they are marked
+#      sync:false so they are never committed to git). Copy them from
+#      deploy/cloudrun-env.yaml on your laptop.
+#
+# Free plan caveat worth knowing: the service sleeps after 15 minutes with no
+# traffic, and the next visitor waits roughly 30 to 50 seconds while it wakes.
+# Fine for testing and early users, not what you want once real tenants are
+# browsing. Moving to a paid plan or to Cloud Run removes it.
+
+services:
+  - type: web
+    name: rent-a-room
+    runtime: docker
+    plan: free
+    region: frankfurt # closest Render region to South Africa
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: JWT_EXPIRES_IN
+        value: 2h
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: SMS_DRIVER
+        value: local
+      - key: EMAIL_FROM
+        value: noreply@rentaroomsoweto.co.za
+
+      # Set these four in the Render dashboard. Values are in
+      # deploy/cloudrun-env.yaml on your machine, which is gitignored.
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_REFRESH_SECRET
+        sync: false
+      - key: ADMIN_KEY
+        sync: false
