@@ -2,6 +2,7 @@ const { GoogleGenAI } = require('@google/genai');
 const config = require('../config');
 const listingRepository = require('../repositories/ListingRepository');
 const fallbackStore = require('../../../services/fallbackStore');
+const marketData = require('../data/sowetoMarketData');
 
 class AiAdvisorService {
   constructor() {
@@ -41,12 +42,9 @@ You assist room seekers, students, and township tenants finding safe, affordable
 Current verified listings available right now in Soweto:
 ${listingSummaries}
 
-Rental market facts for Soweto:
-- Standard single backroom: R1,200 - R1,700/mo.
-- Ensuite room with private bathroom: R2,000 - R2,600/mo.
-- Garage conversion / 1-bedroom flatlet: R1,800 - R3,200/mo.
-- Student accommodation near UJ Soweto Campus / SWGC: R1,900 - R2,800/mo with WiFi & security.
-- Standard safety rule: Never pay a deposit before physically viewing the property in person and meeting the landlord.
+${marketData.buildMarketFactsPrompt()}
+
+Standard safety rule: never pay a deposit before physically viewing the room and meeting the landlord.
 
 Answer user questions helpfully, politely, and accurately with practical South African context (ZAR pricing, transport options like Rea Vaya, Metrorail, taxis, safety tips). Keep answers concise, clear, and easy to read.`;
 
@@ -74,20 +72,37 @@ Answer user questions helpfully, politely, and accurately with practical South A
     const q = userQuery.toLowerCase();
     let answer = '';
 
+    const roomBand = marketData.rentBands.find(b => b.key === 'single_room');
+    const flatletBand = marketData.rentBands.find(b => b.key === 'bachelor_flatlet');
+    const priceLine = `Asking rents on public listing sites, checked ${marketData.capturedOn}: single rooms and backrooms **R${roomBand.minRent} to R${roomBand.maxRent}/mo**, bachelor rooms and flatlets **R${flatletBand.minRent} to R${flatletBand.maxRent}/mo**. These are advertised prices, not a verified average, so treat them as a guide when you negotiate.`;
+
     if (q.includes('uj') || q.includes('student') || q.includes('campus')) {
-      answer = `For students attending the **University of Johannesburg (UJ) Soweto Campus** or SWGC colleges, **Pimville (Zone 4 & 5)** and **Orlando East** are ideal locations. Student accommodation typically ranges from **R1,900 to R2,500/month**, including uncapped WiFi, study space, and prepaid electricity. Check out our verified listings in Pimville!`;
-    } else if (q.includes('deposit') || q.includes('scam') || q.includes('safe') || q.includes('warning')) {
-      answer = `🛡️ **Soweto Rental Safety Tips:**\n1. **Never pay upfront deposits or viewing fees** before physically inspecting the room and verifying the landlord in person.\n2. All landlords on Rent A Room Soweto undergo OTP phone verification.\n3. Make sure to confirm whether water & prepaid electricity are included in the monthly rent.\n4. Ask if the yard is gated and secured at night.`;
-    } else if (q.includes('dobsonville') || q.includes('orlando') || q.includes('diepkloof') || q.includes('protea')) {
-      answer = `Prices across Soweto vary by suburb:\n- **Dobsonville & Diepkloof**: High demand, ensuite backrooms range R2,000 – R2,800/mo close to shopping centres and Rea Vaya.\n- **Protea Glen**: Spacious rooms & modern flatlets from R1,500 – R2,400/mo.\n- **Orlando West/East**: Close to Vilakazi St and transport routes, from R1,600 – R2,400/mo.`;
+      answer = `The University of Johannesburg Soweto Campus sits in **Doornkop/Soweto**, with **Pimville**, **Orlando East** and **Dobsonville** all within reach on Rea Vaya and taxi routes.\n\n${priceLine}\n\nUse the suburb filter above to see what is actually listed right now, and confirm in person before paying anything.`;
+    } else if (q.includes('deposit') || q.includes('scam') || q.includes('safe') || q.includes('warning') || q.includes('right')) {
+      const rights = marketData.tenantRights
+        .slice(0, 4)
+        .map(r => `- **${r.title}** (Rental Housing Act 50 of 1999, ${r.section}): ${r.detail}`)
+        .join('\n');
+      answer = `These are not tips, they are your rights in law:\n\n${rights}\n\nIf a landlord will not comply, the **${marketData.rentalHousingTribunal.province} Rental Housing Tribunal** hears the dispute **free of charge** (${marketData.rentalHousingTribunal.address}, ${marketData.rentalHousingTribunal.phone}).\n\nAnd the rule that stops most scams: never pay a deposit, a "holding fee" or a "viewing fee" before you have physically seen the room.`;
+    } else if (q.includes('price') || q.includes('rent') || q.includes('cost') || q.includes('afford')
+      || marketData.suburbs.some(sub => q.includes(sub.toLowerCase()))) {
+      const bands = marketData.rentBands
+        .map(b => `- **${b.label}**: R${b.minRent} to R${b.maxRent}/mo. ${b.note} _(${b.source}, checked ${b.capturedOn})_`)
+        .join('\n');
+      answer = `Advertised monthly rents across Soweto:\n\n${bands}\n\nPrices vary a lot inside a single suburb depending on whether the room has its own prepaid meter, its own bathroom and a secured yard, so compare on those three things rather than on the suburb name alone.`;
     } else {
-      answer = `Welcome to the Soweto Housing Advisor! In Soweto, standard single rooms average **R1,300 - R1,700/mo**, while modern ensuite units and flatlets with private showers range from **R2,000 - R2,800/mo**. You can use the search bar above to filter by your preferred suburb (e.g., Dobsonville, Pimville, Protea Glen) and budget, or check our Budget Calculator!`;
+      answer = `Welcome to the Soweto Housing Advisor.\n\n${priceLine}\n\nYou can filter by suburb and budget above. Before you pay anything, open the Safety & Rights guide: your deposit must sit in an interest-bearing account and come back to you within 7 days of the lease ending, and the Rental Housing Tribunal enforces that for free.`;
     }
 
     return {
+      // 'grounded' used to be hardcoded true here even though this branch is a
+      // canned answer, not a model reading live listings. It now reports what
+      // it actually is: sourced reference data, no live listing lookup.
       answer,
       model: 'contextual_advisor',
-      grounded: true
+      grounded: false,
+      sourcedFrom: 'sowetoMarketData',
+      dataCapturedOn: marketData.capturedOn
     };
   }
 }

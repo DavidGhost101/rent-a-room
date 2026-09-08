@@ -30,6 +30,46 @@ afterAll(async () => {
   }
 });
 
+describe('Public reference data (/api/market-info)', () => {
+  it('serves sourced rent bands, suburbs and tenant rights without auth', async () => {
+    const res = await request(app).get('/api/market-info');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.success).toBe(true);
+
+    const data = res.body.data;
+    expect(Array.isArray(data.rentBands)).toBe(true);
+    expect(data.rentBands.length).toBeGreaterThan(0);
+    expect(Array.isArray(data.suburbs)).toBe(true);
+    expect(data.suburbs).toContain('Meadowlands');
+    expect(Array.isArray(data.tenantRights)).toBe(true);
+    expect(data.capturedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('gives every rent figure a source and a capture date, so nothing is unattributed', async () => {
+    const res = await request(app).get('/api/market-info');
+    for (const band of res.body.data.rentBands) {
+      expect(typeof band.source).toBe('string');
+      expect(band.source.length).toBeGreaterThan(0);
+      expect(band.sourceUrl).toMatch(/^https:\/\//);
+      expect(band.capturedOn).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+      expect(band.maxRent).toBeGreaterThan(band.minRent);
+      expect(band.minRent).toBeGreaterThan(0);
+    }
+  });
+
+  it('cites the section number for every legal right it states', async () => {
+    const res = await request(app).get('/api/market-info');
+    const rights = res.body.data.tenantRights;
+    expect(rights.length).toBeGreaterThanOrEqual(5);
+    for (const right of rights) {
+      expect(right.section).toMatch(/^s \d/);
+      expect(right.detail.length).toBeGreaterThan(30);
+    }
+    expect(res.body.data.lawSourceUrl).toMatch(/^https:\/\//);
+    expect(res.body.data.rentalHousingTribunal.isFree).toBe(true);
+  });
+});
+
 describe('Enterprise Backend Production Suite', () => {
   let userToken = '';
   let refreshToken = '';

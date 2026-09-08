@@ -836,6 +836,23 @@
           <span>Total Upfront First Month:</span>
           <span id="calcTotalUpfront" class="font-black text-brand-500 font-mono text-base">R0</span>
         </div>
+        <p class="text-[11px] text-slate-600 pt-2 border-t border-slate-200 leading-relaxed">
+          <strong>That deposit stays yours.</strong> Under the Rental Housing Act 50 of 1999 it must be held in an interest bearing account,
+          the interest is paid to you, and if you owe nothing it must be back in your hands within <strong>7 days</strong> of the lease ending.
+        </p>
+      </div>
+
+      <!-- Sourced market context, so a tenant can see whether the asking price is normal -->
+      <div class="p-3 bg-brand-50 border border-brand-200 rounded-xl text-[11px] text-slate-700 leading-relaxed">
+        <div class="font-bold text-slate-900 mb-1">What rooms actually go for in Soweto</div>
+        <div id="calcMarketBands" class="space-y-0.5">
+          <div class="flex justify-between"><span>Single room / backroom</span><span class="font-mono font-bold">R1 300 to R3 000</span></div>
+          <div class="flex justify-between"><span>Bachelor room / flatlet</span><span class="font-mono font-bold">R1 500 to R4 500</span></div>
+          <div class="flex justify-between"><span>Flat, 1 to 3 bedroom</span><span class="font-mono font-bold">R2 000 to R8 900</span></div>
+        </div>
+        <p class="text-slate-500 pt-1.5 mt-1.5 border-t border-brand-200">
+          Asking prices on Roomies, RoomKing and Property24, checked <span id="calcMarketDate">8 September 2026</span>. A guide for negotiating, not a valuation.
+        </p>
       </div>
 
       <div class="pt-2 flex items-center gap-2">
@@ -1181,6 +1198,47 @@
           <li>Verify hot water supply, bathroom plumbing, and perimeter gate safety.</li>
           <li>Ensure a written lease or receipt is provided when you eventually make a payment.</li>
         </ul>
+      </div>
+
+      <!-- Rule 5: the actual law, not a tip -->
+      <div class="p-3.5 bg-slate-50 border border-slate-300 rounded-xl space-y-2">
+        <div class="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+          <span>⚖️</span>
+          <span>5. Know Your Rights: These Are Law, Not Tips</span>
+        </div>
+        <p class="text-[11px] text-slate-600">
+          The <strong>Rental Housing Act 50 of 1999</strong> already protects you, whether or not you signed anything.
+          Quote the section number to a landlord who disputes it.
+        </p>
+        <ul class="space-y-1.5 text-slate-700">
+          <li><strong>Your deposit must earn interest for you.</strong> It has to sit in an interest bearing account and the interest is yours. You may ask in writing for proof. <span class="text-slate-400">s 5(3)(d)</span></li>
+          <li><strong>Inspect the room together, twice.</strong> Once before you move in to record existing damage, and again within three days before the lease ends. If the landlord skips the final inspection, they lose the right to claim against your deposit. <span class="text-slate-400">s 5(3)(e), (f)</span></li>
+          <li><strong>Deposit back within 7 days.</strong> If you owe nothing, deposit plus interest is due within 7 days of the lease ending. Where repairs are done it is 14 days from restoration, and any balance within 21 days. <span class="text-slate-400">s 5(3)(i), (g), (m)</span></li>
+          <li><strong>You can demand a written lease.</strong> If you ask, the landlord must put it in writing. <span class="text-slate-400">s 5(2)</span></li>
+          <li><strong>A written receipt for every payment.</strong> Dated, showing the address, and stating whether it was rent, arrears or deposit. Refusing is an unfair practice. <span class="text-slate-400">s 5(3)(a), (b)</span></li>
+          <li><strong>Your room is your home.</strong> The landlord may inspect only after reasonable notice, and may not search you or your property. <span class="text-slate-400">s 4(2), 4(3)</span></li>
+        </ul>
+        <p class="text-[11px] text-slate-500 pt-1 border-t border-slate-200">
+          Source: <a href="https://www.saflii.org/za/legis/consol_act/rha1999171/" target="_blank" rel="noopener noreferrer" class="text-brand-600 font-semibold underline">Rental Housing Act 50 of 1999 on SAFLII</a>. This is a summary, not legal advice.
+        </p>
+      </div>
+
+      <!-- Rule 6: free enforcement -->
+      <div class="p-3.5 bg-indigo-50/80 border border-indigo-200 rounded-xl space-y-1">
+        <div class="font-extrabold text-indigo-950 text-sm flex items-center gap-1.5">
+          <span>🏛️</span>
+          <span>6. If a Landlord Will Not Comply, It Costs You Nothing</span>
+        </div>
+        <p class="text-indigo-900">
+          The <strong>Gauteng Rental Housing Tribunal</strong> hears rental disputes <strong>free of charge</strong> for both tenants and landlords:
+          unrefunded deposits, illegal lockouts, electricity or water cut off without a court order, failure to maintain, harassment, and discrimination against a prospective tenant.
+        </p>
+        <p class="text-[11px] text-indigo-800 font-semibold">
+          Ikusaka House, 4th Floor, 129 Fox Street, Johannesburg &bull; 011 630 5036
+        </p>
+        <p class="text-[11px] text-indigo-700/80">
+          Contacts as published by the <a href="https://www.dhs.gov.za/sites/default/files/publications/RENTAL%20HOUSING%20TRIBUNAL2.pdf" target="_blank" rel="noopener noreferrer" class="underline font-semibold">National Department of Human Settlements</a>. Government numbers change, so confirm before you travel.
+        </p>
       </div>
 
       <div class="pt-2">
@@ -1589,6 +1647,37 @@ async function loadConfig() {
       }
     }
   } catch (e) { /* non-critical fallback */ }
+}
+
+// Sourced Soweto rent bands, served by /api/market-info so the figures live in
+// one place (backend/src/data/sowetoMarketData.js) instead of being retyped
+// into the HTML every time the market moves. The markup already carries the
+// last known values, so this only ever improves what is on screen.
+async function loadMarketInfo() {
+  try {
+    const res = await fetch((window.API_BASE_URL||'') + '/api/market-info');
+    if (!res.ok) return;
+    const payload = await res.json();
+    const info = payload && payload.data;
+    if (!info || !Array.isArray(info.rentBands) || !info.rentBands.length) return;
+
+    const rand = n => 'R' + Number(n).toLocaleString('en-ZA').replace(/,/g, ' ');
+    const rows = info.rentBands.map(b =>
+      '<div class="flex justify-between"><span>' + escapeHtml(b.label) + '</span>' +
+      '<span class="font-mono font-bold">' + rand(b.minRent) + ' to ' + rand(b.maxRent) + '</span></div>'
+    ).join('');
+
+    const bandsEl = document.getElementById('calcMarketBands');
+    if (bandsEl) bandsEl.innerHTML = rows;
+
+    const dateEl = document.getElementById('calcMarketDate');
+    if (dateEl && info.capturedOn) {
+      const d = new Date(info.capturedOn + 'T00:00:00');
+      if (!isNaN(d)) {
+        dateEl.textContent = d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    }
+  } catch (e) { /* the static figures in the markup stay as they are */ }
 }
 
 function debouncedLoadListings() {
@@ -3510,6 +3599,7 @@ try {
   if (yr) yr.textContent = new Date().getFullYear();
   updateSavedBadge();
   loadConfig();
+  loadMarketInfo();
   loadListings();
   initPhotoDragAndDrop();
   checkUrlParamsAndOpenRoom();

@@ -12,6 +12,7 @@
     "build:css": "tailwindcss -i ./styles/input.css -o ./public/css/style.css --minify",
     "watch:css": "tailwindcss -i ./styles/input.css -o ./public/css/style.css --watch",
     "lint": "node -e \"console.log('Lint check passed')\"",
+    "sync:android": "node scripts/sync-android-www.js",
     "test": "jest --runInBand --detectOpenHandles"
   },
   "dependencies": {
