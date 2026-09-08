@@ -56,14 +56,11 @@ class RoomRequestService {
 
       const { items, total } = await roomRequestRepository.findPaginated(filter, pagination);
 
-      if (total === 0 && fallbackStore && fallbackStore.fallbackRequests) {
-        return {
-          items: fallbackStore.fallbackRequests,
-          total: fallbackStore.fallbackRequests.length,
-          page: 1,
-          limit: 20
-        };
-      }
+      // Same reasoning as ListingService.getListings: an empty result from a
+      // working database is a real answer. Substituting the demo requests here
+      // put invented tenants with real looking phone numbers in front of
+      // landlords, and hid the fact that nobody had actually posted yet. The
+      // fallback stays in the catch below, for when the database is unreachable.
 
       return { items, total, page: Number(page), limit: Number(limit) };
     } catch (err) {

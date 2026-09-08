@@ -93,18 +93,17 @@ class ListingService {
 
       const { items, total } = await listingRepository.findWithPopulatedLandlord(filter, pagination);
 
-      // If DB returns empty but fallback listings exist in initial state, merge seamlessly
-      if (total === 0 && fallbackStore && fallbackStore.fallbackListings) {
-        const filtered = this._filterFallbackListings(fallbackStore.fallbackListings, queryParams)
-          .map(l => this.populateListingLandlord(l));
-        return {
-          items: filtered,
-          total: filtered.length,
-          page: 1,
-          limit: 20
-        };
-      }
-
+      // An empty result from a working database is a real answer, not a failure.
+      //
+      // This used to substitute the hardcoded demo listings from fallbackStore
+      // whenever the query returned nothing, which meant the site could never
+      // legitimately show "no rooms available" and instead displayed invented
+      // rooms carrying real looking South African phone numbers. A tenant could
+      // WhatsApp a stranger about a room that does not exist. It also made an
+      // empty production database invisible, since the site looked populated.
+      //
+      // The fallback now belongs only in the catch below, where the database is
+      // genuinely unreachable.
       return { items, total, page: Number(page), limit: Number(limit) };
     } catch (err) {
       console.warn('ListingService query fallback:', err.message);
