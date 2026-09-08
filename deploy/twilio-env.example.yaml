@@ -1,0 +1,15 @@
+# Copy this file to deploy\twilio-env.yaml, fill in your three real values, save.
+# deploy\twilio-env.yaml is gitignored and never leaves your machine.
+#
+# Where each value comes from, at console.twilio.com:
+#   ACCOUNT_SID   Account Info panel on the dashboard home. Starts with AC.
+#   AUTH_TOKEN    Same panel, hidden behind "show". Treat it like a password.
+#   PHONE_NUMBER  Phone Numbers, Manage, Active numbers. Full E.164 format,
+#                 for example +15551234567. It must be a number you own on
+#                 this account and it must be SMS capable.
+#
+# Then run:  powershell -ExecutionPolicy Bypass -File deploy\setup-twilio.ps1 -RenderApiKey rnd_...
+
+TWILIO_ACCOUNT_SID: "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+TWILIO_AUTH_TOKEN: "your_auth_token_here"
+TWILIO_PHONE_NUMBER: "+15551234567"

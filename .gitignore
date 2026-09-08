@@ -38,3 +38,6 @@ deploy/ADMIN-PASSWORD.txt
 
 # Downloaded build artifacts
 apk/
+
+# Real Twilio credentials, never commit
+deploy/twilio-env.yaml
