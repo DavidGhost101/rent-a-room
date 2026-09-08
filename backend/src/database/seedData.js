@@ -23,7 +23,27 @@ async function seed() {
       Logger.info('Super Admin user seeded.');
     }
 
-    // 2. Seed Landlords and Listings
+    // 2. Seed demo Landlords, Listings and Room Requests
+    //
+    // OFF BY DEFAULT, deliberately. Two reasons.
+    //
+    // First, seed() runs on every boot. Deleting the demo rows from the database
+    // does not stick, because the next container start recreates them, and on a
+    // free plan that is every time the service wakes.
+    //
+    // Second, and more seriously: the demo landlords carry real looking South
+    // African mobile numbers, and the app builds WhatsApp deep links from a
+    // landlord's phone. A tenant browsing the live site can therefore message a
+    // stranger about a room that does not exist. That is a real person being
+    // bothered, not a cosmetic problem.
+    //
+    // Set SEED_DEMO_DATA=true to populate a fresh development database.
+    const seedDemo = String(process.env.SEED_DEMO_DATA || '').toLowerCase() === 'true';
+    if (!seedDemo) {
+      Logger.info('Demo data seeding skipped (set SEED_DEMO_DATA=true to enable).');
+      return;
+    }
+
     const listingCount = await Listing.countDocuments();
     if (listingCount === 0) {
       Logger.info('Seeding initial verified Soweto listings...');
