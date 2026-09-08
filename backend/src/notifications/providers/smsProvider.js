@@ -49,6 +49,15 @@ class SmsProvider {
         if (isProduction) throw new Error(`FATAL: ${this.initError}`);
         Logger.warn(`${this.initError} Falling back to the local driver (development only).`);
       }
+    } else if (isProduction) {
+      // Deliberately a loud warning and not a crash. SMS only affects landlord
+      // login. Browsing listings, contacting a landlord on WhatsApp and the whole
+      // admin portal work without it, so taking the site down over this would
+      // punish every visitor for a feature most of them never touch.
+      Logger.warn(
+        `SMS_DRIVER is '${this.driver}' in production. Landlords cannot receive verification codes, ` +
+        'so OTP login will return a clear error until Twilio credentials are configured.'
+      );
     }
   }
 
