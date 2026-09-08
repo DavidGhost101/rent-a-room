@@ -1,0 +1,24 @@
+# Normalise line endings so the repo stops showing phantom diffs.
+# Everything is stored as LF inside git; the working copy gets whatever
+# the platform needs.
+* text=auto eol=lf
+
+# Windows batch files must keep CRLF or cmd.exe mis-parses them.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# The Gradle wrapper script runs on the Ubuntu CI runner: it must stay LF
+# and must stay executable, or the Android build fails with
+# "./gradlew: Permission denied".
+gradlew text eol=lf
+
+# Binaries git must never touch.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.webp  binary
+*.ico   binary
+*.apk   binary
+*.jar   binary
+*.keystore binary
